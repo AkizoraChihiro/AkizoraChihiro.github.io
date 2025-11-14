@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>あきぞらのしつげん_GitHubPageちほー</title>
+<meta name="description" content="あきぞらちゃんかわいい">
+<meta name="keywords" content="ページのキーワードA,B,C">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="index.css">
+</head>
+<body>
+<div id="outer">
+<header>
+<div id="header-inner">
+<h1>あきぞら式テキサスホールデムについて</h1>
+<p class="description">かわいいあきぞらちゃんがテキサスホールデムについていい感じに解説していくよ</p>
+</div>
+</header>
+<div id="content">
+<div class="inner"><h2>そもそもテキサスホールデムって何</h2>
+<p>自分の手札2枚と参加者全員が使える共通の5枚をの合計7枚から5枚使ってより強い役を作った人が勝ち！</p>
+<h3>用語</h3>
+<p>専門用語やスラングはマウスホバーで解説が出るよ！(予定)</p>
+</div>
+</div>
+<aside>
+<div id="side-inner">
+<div class="side-title">工事中その1</div>
+<div class="side">
+<ul>
+<li>工事中1-1</li>
+<li>工事中1-2</li>
+</ul>
+</div>
+</div>
+  <div id="side-inner">
+<div class="side-title">工事中その2</div>
+<div class="side">
+<ul>
+<li>工事中2-1</li>
+<li>工事中2-2</li>
+</ul>
+</div>
+</div>
+</aside>
+<footer>Twitter → @Akizora_chihiro</footer>
+</div></body>
+</html>
