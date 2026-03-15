@@ -116,13 +116,27 @@
 
 <script>
     // 1〜24の単語リスト（※ご自身で内容を書き換えてください）
-    const wordList = {};
-    for (let i = 1; i <= 24; i++) {
-        wordList[i] = {
-            title: `単語 ${i}`,
-            desc: `これは単語 ${i} の解説文です。ここに箇条書きや詳細な説明を入れます。`
-        };
-    }
+    // グローバル変数として定義
+    let wordList = {};
+    // ページ読み込み時にJSONを取得
+    window.addEventListener('DOMContentLoaded', async () => {
+        const generateBtn = document.getElementById('generate-btn');
+        generateBtn.disabled = true; // 読み込み完了までボタンを無効化
+        generateBtn.textContent = "単語データ読み込み中...";
+    
+        try {
+            const response = await fetch('words.json');
+            if (!response.ok) throw new Error('JSONの読み込みに失敗しました');
+            
+            wordList = await response.json();
+            
+            generateBtn.disabled = false;
+            generateBtn.textContent = "ビンゴカード作成";
+        } catch (error) {
+            console.error(error);
+            alert("単語リストの読み込みに失敗しました。ファイルが正しく配置されているか確認してください。");
+        }
+    });
 
     const generateBtn = document.getElementById('generate-btn');
     const shareBtn = document.getElementById('share-btn');
