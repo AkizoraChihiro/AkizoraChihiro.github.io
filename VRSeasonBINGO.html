@@ -3,92 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>オリジナルビンゴゲーム</title>
+    <title>VRC二十四節気ビンゴゲーム</title>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
-        body {
-            font-family: sans-serif;
-            text-align: center;
-            background-color: #f9f9f9;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        #bingo-card {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 5px;
-            margin: 20px auto;
-            width: 300px;
-            height: 300px;
-            background-color: #333;
-            padding: 5px;
-            border-radius: 5px;
-        }
-        .cell {
-            background-color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1.2rem;
-            cursor: pointer;
-            user-select: none;
-            border-radius: 3px;
-            transition: background-color 0.2s;
-        }
-        .cell:hover {
-            background-color: #f0f0f0;
-        }
-        .cell.free {
-            background-color: #ffd700;
-            cursor: default;
-        }
-        /* クリックされた時のオレンジ色 */
-        .cell.clicked {
-            background-color: #ffa500;
-            color: white;
-        }
-        .cell.free.clicked {
-            background-color: #ffd700; /* FREEは色を変えない */
-            color: black;
-        }
-        #explanation-box {
-            min-height: 60px;
-            background: #eef;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            text-align: left;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            margin: 5px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        input[type="text"] {
-            padding: 8px;
-            font-size: 1rem;
-            width: 60%;
-        }
-        .hidden {
-            display: none;
-        }
+        body { font-family: sans-serif; text-align: center; background-color: #f9f9f9; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        #bingo-card { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin: 20px auto; width: 300px; height: 300px; background-color: #333; padding: 5px; border-radius: 5px; }
+        .cell { background-color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; cursor: pointer; user-select: none; border-radius: 3px; transition: background-color 0.2s; }
+        .cell:hover { background-color: #f0f0f0; }
+        .cell.free { background-color: #ffd700; cursor: default; }
+        .cell.clicked { background-color: #ffa500; color: white; }
+        .cell.free.clicked { background-color: #ffd700; color: black; }
+        #explanation-box { min-height: 80px; background: #eef; padding: 10px; border-radius: 5px; margin-bottom: 20px; text-align: left; font-size: 0.9rem; }
+        button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; margin: 5px; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        input[type="text"] { padding: 8px; font-size: 1rem; width: 60%; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -98,141 +28,122 @@
     
     <div id="setup-area">
         <input type="text" id="user-name" placeholder="あなたの名前を入力">
-        <button id="generate-btn">ビンゴカード作成</button>
+        <button id="generate-btn">単語データ読み込み中...</button>
     </div>
 
     <div id="game-area" class="hidden">
         <p><span id="display-name"></span>さんのカード (ビンゴ数: <span id="bingo-count">0</span>)</p>
-        
         <div id="bingo-card"></div>
-
         <div id="explanation-box">
             <p>数字の上にマウスを乗せると、ここに解説が表示されます。</p>
         </div>
-
         <button id="share-btn" style="background-color: #1da1f2;">X (Twitter) でシェア</button>
     </div>
 </div>
 
 <script>
-    // 1〜24の単語リスト（※ご自身で内容を書き換えてください）
-    // グローバル変数として定義
-    let wordList = {};
-    // ページ読み込み時にJSONを取得
-    window.addEventListener('DOMContentLoaded', async () => {
-        const generateBtn = document.getElementById('generate-btn');
-        generateBtn.disabled = true; // 読み込み完了までボタンを無効化
-        generateBtn.textContent = "単語データ読み込み中...";
-    
-        try {
-            const response = await fetch('words.json');
-            if (!response.ok) throw new Error('JSONの読み込みに失敗しました');
-            
-            wordList = await response.json();
-            
-            generateBtn.disabled = false;
-            generateBtn.textContent = "ビンゴカード作成";
-        } catch (error) {
-            console.error(error);
-            alert("単語リストの読み込みに失敗しました。ファイルが正しく配置されているか確認してください。");
-        }
-    });
+    let wordList = {}; // 単語リストを保持する変数（宣言は1回だけ）
+    let currentBingoCount = 0;
+    let userName = "";
+    let cellStates = new Array(25).fill(false);
 
     const generateBtn = document.getElementById('generate-btn');
     const shareBtn = document.getElementById('share-btn');
     const bingoCard = document.getElementById('bingo-card');
     const explanationBox = document.getElementById('explanation-box');
-    let currentBingoCount = 0;
-    let userName = "";
 
-// --- 1. 名前を数値（シード値）に変換する関数 ---
-function cyrb128(str) {
-    let h1 = 1779033703, h2 = 3144134277, h3 = 1013904242, h4 = 2773480762;
-    for (let i = 0, k; i < str.length; i++) {
-        k = str.charCodeAt(i);
-        h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
-        h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
-        h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
-        h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
-    }
-    h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
-    h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
-    h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
-    h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
-    return [h1>>>0, h2>>>0, h3>>>0, h4>>>0];
-}
-
-function sfc32(a, b, c, d) {
-    return function() {
-        a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0; 
-        var t = (a + b | 0) + d | 0;
-        d = d + 1 | 0;
-        a = b ^ b >>> 9;
-        b = c + (c << 3) | 0;
-        c = (c << 21 | c >>> 11);
-        c = c + t | 0;
-        return (t >>> 0) / 4294967296;
-    }
-}
-
-// --- 2. カード生成ロジックの修正 ---
-let wordList = {}; 
-
-generateBtn.addEventListener('click', () => {
-    userName = document.getElementById('user-name').value.trim() || "名無し";
-    
-    // シードベースの乱数生成器を作成
-    const seed = cyrb128(userName);
-    const rand = sfc32(seed[0], seed[1], seed[2], seed[3]);
-
-    document.getElementById('display-name').textContent = userName;
-    document.getElementById('setup-area').classList.add('hidden');
-    document.getElementById('game-area').classList.remove('hidden');
-    
-    createCard(rand); // 乱数生成器を渡す
-});
-
-function createCard(randFunc) {
-    bingoCard.innerHTML = '';
-    cellStates = new Array(25).fill(false);
-    currentBingoCount = 0;
-    updateBingoCountDisplay();
-
-    let numbers = Array.from({length: 24}, (_, i) => i + 1);
-    
-    // Math.random() の代わりに randFunc() を使用してシャッフル
-    for (let i = numbers.length - 1; i > 0; i--) {
-        const j = Math.floor(randFunc() * (i + 1));
-        [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
+    // 1. 名前をシード値に変換する関数
+    function cyrb128(str) {
+        let h1 = 1779033703, h2 = 3144134277, h3 = 1013904242, h4 = 2773480762;
+        for (let i = 0, k; i < str.length; i++) {
+            k = str.charCodeAt(i);
+            h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+            h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+            h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+            h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+        }
+        h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
+        h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
+        h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
+        h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
+        return [h1>>>0, h2>>>0, h3>>>0, h4>>>0];
     }
 
-    let numIndex = 0;
+    function sfc32(a, b, c, d) {
+        return function() {
+            a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0; 
+            var t = (a + b | 0) + d | 0;
+            d = d + 1 | 0;
+            a = b ^ b >>> 9;
+            b = c + (c << 3) | 0;
+            c = (c << 21 | c >>> 11);
+            c = c + t | 0;
+            return (t >>> 0) / 4294967296;
+        }
+    }
 
+    // 2. 起動時にJSONを読み込む
+    window.addEventListener('DOMContentLoaded', async () => {
+        generateBtn.disabled = true;
+        try {
+            const response = await fetch('bingo.json');
+            if (!response.ok) throw new Error('JSONの読み込みに失敗しました');
+            wordList = await response.json();
+            generateBtn.disabled = false;
+            generateBtn.textContent = "ビンゴカード作成";
+        } catch (error) {
+            console.error(error);
+            alert("bingo.jsonが見つかりません。同じフォルダに配置してください。");
+        }
+    });
+
+    // 3. ビンゴカード作成ボタン
+    generateBtn.addEventListener('click', () => {
+        userName = document.getElementById('user-name').value.trim() || "名無し";
+        const seed = cyrb128(userName);
+        const rand = sfc32(seed[0], seed[1], seed[2], seed[3]);
+
+        document.getElementById('display-name').textContent = userName;
+        document.getElementById('setup-area').classList.add('hidden');
+        document.getElementById('game-area').classList.remove('hidden');
+        
+        createCard(rand);
+    });
+
+    function createCard(randFunc) {
+        bingoCard.innerHTML = '';
+        cellStates = new Array(25).fill(false);
+        currentBingoCount = 0;
+        updateBingoCountDisplay();
+
+        let numbers = Array.from({length: 24}, (_, i) => i + 1);
+        for (let i = numbers.length - 1; i > 0; i--) {
+            const j = Math.floor(randFunc() * (i + 1));
+            [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
+        }
+
+        let numIndex = 0;
         for (let i = 0; i < 25; i++) {
             const cell = document.createElement('div');
             cell.classList.add('cell');
-            cell.dataset.index = i;
-
+            
             if (i === 12) {
-                // 中心はFREEマス
                 cell.textContent = "FREE";
                 cell.classList.add('free', 'clicked');
-                cellStates[i] = true; // FREEは最初から開いている扱い
+                cellStates[i] = true;
             } else {
                 const num = numbers[numIndex++];
                 cell.textContent = num;
-                cell.dataset.number = num;
-
-                // マウスホバー時のイベント
+                
                 cell.addEventListener('mouseenter', () => {
-                    explanationBox.innerHTML = `<strong>${wordList[num].title}</strong><br><ul><li>${wordList[num].desc}</li></ul>`;
+                    const data = wordList[num] || {title: "???", desc: "解説がありません"};
+                    explanationBox.innerHTML = `<strong>${data.title}</strong><br><ul><li>${data.desc}</li></ul>`;
                 });
-                // マウスが外れた時（お好みで残してもOK）
+                
                 cell.addEventListener('mouseleave', () => {
                     explanationBox.innerHTML = `<p>数字の上にマウスを乗せると、ここに解説が表示されます。</p>`;
                 });
 
-                // クリック時のイベント
                 cell.addEventListener('click', () => {
                     cell.classList.toggle('clicked');
                     cellStates[i] = cell.classList.contains('clicked');
@@ -244,20 +155,15 @@ function createCard(randFunc) {
     }
 
     function checkBingo() {
-        // ビンゴの判定ライン (縦・横・斜め)
         const lines = [
-            [0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, 12, 13, 14], [15, 16, 17, 18, 19], [20, 21, 22, 23, 24], // 横
-            [0, 5, 10, 15, 20], [1, 6, 11, 16, 21], [2, 7, 12, 17, 22], [3, 8, 13, 18, 23], [4, 9, 14, 19, 24], // 縦
-            [0, 6, 12, 18, 24], [4, 8, 12, 16, 20] // 斜め
+            [0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],
+            [0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],
+            [0,6,12,18,24],[4,8,12,16,20]
         ];
-
         let count = 0;
         lines.forEach(line => {
-            if (line.every(index => cellStates[index])) {
-                count++;
-            }
+            if (line.every(idx => cellStates[idx])) count++;
         });
-
         currentBingoCount = count;
         updateBingoCountDisplay();
     }
@@ -266,46 +172,31 @@ function createCard(randFunc) {
         document.getElementById('bingo-count').textContent = currentBingoCount;
     }
 
+    // 4. X(Twitter)シェア機能
     shareBtn.addEventListener('click', async () => {
         try {
-            // ボタンを一時的に無効化
             shareBtn.disabled = true;
             shareBtn.textContent = "画像生成中...";
 
-            // ビンゴカードを画像化 (背景色を指定しないと透明になることがあるため設定)
             const canvas = await html2canvas(bingoCard, { backgroundColor: '#333' });
-            
             canvas.toBlob(async (blob) => {
-                try {
-                    // クリップボードに画像をコピー
-                    const item = new ClipboardItem({ 'image/png': blob });
-                    await navigator.clipboard.write([item]);
-                    
-                    alert('ビンゴカードの画像をコピーしました！\nXの投稿画面で「貼り付け（Ctrl+V または Cmd+V）」をして画像を添付してください。');
-                    
-                    // ツイート文面の作成とX画面への遷移
-                    const tweetText = `${userName}さんのビンゴ結果！\n現在のビンゴ数: ${currentBingoCount}\n#オリジナルビンゴ\n`;
-                    // GithubPagesのURLが決まったら、ここに自身のURLを追記すると良いです
-                    // const url = encodeURIComponent("https://yourusername.github.io/your-repo/"); 
-                    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
-                    
-                    window.open(twitterUrl, '_blank');
-                } catch (clipboardError) {
-                    console.error('Clipboard write failed', clipboardError);
-                    alert('画像のクリップボードへのコピーに失敗しました。ブラウザが対応していない可能性があります。');
-                } finally {
-                    shareBtn.disabled = false;
-                    shareBtn.textContent = "X (Twitter) でシェア";
-                }
+                const item = new ClipboardItem({ 'image/png': blob });
+                await navigator.clipboard.write([item]);
+                alert('画像をコピーしました！Twitter(現X)の投稿画面でペーストしてください。');
+                
+                const tweetText = `${userName}さんのビンゴ結果！\nビンゴ数: ${currentBingoCount}\n#オリジナルビンゴ\n`;
+                const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+                window.open(twitterUrl, '_blank');
+                
+                shareBtn.disabled = false;
+                shareBtn.textContent = "X (Twitter) でシェア";
             });
-        } catch (error) {
-            console.error('html2canvas failed', error);
-            alert('画像の生成に失敗しました。');
+        } catch (err) {
+            console.error(err);
+            alert('シェアに失敗しました。');
             shareBtn.disabled = false;
-            shareBtn.textContent = "X (Twitter) でシェア";
         }
     });
 </script>
-
 </body>
 </html>
